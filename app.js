@@ -15,7 +15,8 @@
   let url;
   try{
     url=new URL(window.WALLMANN_CONFIG.appsScriptUrl);
-    if(url.origin!=='https://script.google.com'||!/^\/macros\/s\/[^/]+\/exec$/.test(url.pathname))throw Error();
+    
+  if(url.origin!=='https://script.google.com'||!/^\/(?:macros\/s|a\/macros\/[^/]+\/s)\/[^/]+\/exec$/.test(url.pathname))throw Error();
   }catch{
     status.textContent='V3 mangler test-webappens adresse. Udfyld appsScriptUrl i config.js efter testopsætning.';frame.hidden=true;return;
   }
