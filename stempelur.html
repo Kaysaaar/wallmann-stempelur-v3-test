@@ -5,12 +5,12 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Stempelur"><meta name="mobile-web-app-capable" content="yes">
 <meta name="referrer" content="no-referrer"><link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=stempelur-1"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=stempelur-1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; script-src 'sha256-FuDP/k9J9nd5RvRskZPXoDJrOC3o1etFT9PdNKNRoqM='; style-src 'sha256-s2JRE46U3lzP4fnUrNJCHFl/2wDbLNNhqAlncfSs2RE='; frame-src https://script.google.com https://*.googleusercontent.com; base-uri 'none'; form-action 'none'; object-src 'none'">
-<title>Wallmann · Stempelur</title><style>html{background:#173d2f;color-scheme:dark;height:100%;}*{box-sizing:border-box}body{margin:0;background:#173d2f;color:#edf8ef;font:17px system-ui,sans-serif;height:100vh;height:100dvh;overflow:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}[hidden]{display:none!important}#app{height:100%;background:#173d2f}iframe{display:block;border:0;width:100%;height:100%;background:#173d2f}#setup{height:100%;overflow:auto;max-width:520px;margin:auto;padding:28px 22px}h1{font-size:26px}p{line-height:1.5;color:#d1e4d6}label{display:block;font-weight:650;margin:24px 0 10px}input,button{font:inherit;min-height:48px;border:1px solid #86a492;border-radius:12px;background:#102c20;color:#f0fff3;padding:12px;width:100%}button{margin-top:16px;background:#285442;font-weight:700}input:focus-visible,button:focus-visible{outline:3px solid #43f58a;outline-offset:3px}#error{color:#ffd3ca}small{display:block;margin-top:22px;line-height:1.5;color:#bbd2c2}</style></head><body>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; script-src 'sha256-cImRFuEPEJ5IW9X1NHP7st8R/bA0IueAscZusIUwMGs='; style-src 'sha256-NzUSGPT8ZyQIqDyi4bFE0+486dbB6NPExTQerybhvJI='; connect-src 'self'; frame-src https://script.google.com https://*.googleusercontent.com; base-uri 'none'; form-action 'none'; object-src 'none'">
+<title>Wallmann · Stempelur</title><style>html{background:#173d2f;color-scheme:dark;height:100%;}*{box-sizing:border-box}body{margin:0;background:#173d2f;color:#edf8ef;font:17px system-ui,sans-serif;height:100vh;height:100dvh;overflow:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}[hidden]{display:none!important}#app{height:100%;background:#173d2f}iframe{display:block;border:0;width:100%;height:100%;background:#173d2f}#setup{height:100%;overflow:auto;max-width:520px;margin:auto;padding:28px 22px}h1{font-size:26px}p{line-height:1.5;color:#d1e4d6}label{display:block;font-weight:650;margin:24px 0 10px}input,button{font:inherit;min-height:48px;border:1px solid #86a492;border-radius:12px;background:#102c20;color:#f0fff3;padding:12px;width:100%}button{margin-top:16px;background:#285442;font-weight:700}input:focus-visible,button:focus-visible{outline:3px solid #43f58a;outline-offset:3px}#error{color:#ffd3ca}small{display:block;margin-top:22px;line-height:1.5;color:#bbd2c2}#update-ready{margin:6px 12px;width:calc(100% - 24px);min-height:44px;padding:8px 12px;font-size:15px}body.has-update #app{height:calc(100% - 56px)}</style></head><body>
 <main id="setup"><h1>Wallmann · Stempelur</h1><p>Denne indgang åbner Wallmann Stempelur.</p>
 <form id="connect"><label for="link">Privatlink til Wallmann Stempelur</label><input id="link" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" required><button type="submit">Åbn stempeluret</button><p id="error" role="alert"></p></form>
 <small>Åbn stempeluret først. Vælg derefter Del → Føj til hjemmeskærm i Safari. Behold dit eksisterende ikon, indtil den nye indgang er kontrolleret. Privatlinket skal behandles som en nøgle og må ikke deles.</small></main>
-<div id="app" hidden></div><script>(()=>{
+<div id="app" hidden></div><button id="update-ready" type="button" hidden>Opdatering klar – tryk her for at opdatere</button><script>(()=>{
 'use strict';
 const BASE='https://script.google.com/a/macros/wallmannapps.com/s/AKfycbws6273rOcwiQfCeBZjU3rRFUeYZGLIugW_IlpyEeE8G_eQJilusTNqHb-2sZ-v894p8g/exec';
 const $=id=>document.getElementById(id);
@@ -23,15 +23,61 @@ function keyFromLink(value){
  return key;
 }
 function open(key){
- const u=new URL(BASE);u.searchParams.set('kioskKey',key);u.searchParams.set('v','wallmann-entry-1');
+ updateNonce=Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,'0')).join('');
+ updateSource=null;appRelease='';paintUpdate();
+ const u=new URL(BASE);u.searchParams.set('kioskKey',key);u.searchParams.set('v',ENTRY_RELEASE);u.searchParams.set('updateNonce',updateNonce);
  const frame=document.createElement('iframe');frame.title='Wallmann · Stempelur';frame.referrerPolicy='no-referrer';
  frame.src=u.href;$('app').replaceChildren(frame);$('setup').hidden=true;$('app').hidden=false;
- // No message bridge, tokens, polling, retries or stamp calls in this outer page.
+ // The update channel contains only a nonce, version and reload acknowledgement.
  // The existing Google application owns all authorization and durable acknowledgements.
 }
 $('connect').addEventListener('submit',e=>{
  e.preventDefault();try{const key=keyFromLink($('link').value.trim());history.replaceState(null,'','#kioskKey='+key);$('link').value='';$('error').textContent='';open(key);}catch(err){$('error').textContent=err.message;}
 });
+const ENTRY_RELEASE='2026-11-02.1';
+let updateNonce='',updateSource=null,updateOrigin='',appRelease='',latestRelease=null,updateRequest='',releaseBusy=false;
+const refreshButton=$('update-ready');
+function paintUpdate(){
+ const available=latestRelease&&updateSource&&(latestRelease.entry!==ENTRY_RELEASE||latestRelease.app!==appRelease);
+ refreshButton.hidden=!available;
+ document.body.classList.toggle('has-update',!!available);
+}
+function updateOriginAllowed(origin){return /^https:\/\/([a-z0-9-]+-script\.googleusercontent\.com|script\.googleusercontent\.com)$/.test(origin);}
+window.addEventListener('message',e=>{
+ const m=e.data;
+ if(!updateNonce||!m||m.app!=='wallmann-update'||m.nonce!==updateNonce||!updateOriginAllowed(e.origin))return;
+ if(m.action==='hello'&&/^[a-zA-Z0-9.-]{1,80}$/.test(m.version||'')){
+  if(updateSource&&updateSource!==e.source)return;
+  updateSource=e.source;updateOrigin=e.origin;appRelease=m.version;paintUpdate();return;
+ }
+ if(e.source!==updateSource||e.origin!==updateOrigin||m.action!=='prepared'||!updateRequest||m.request!==updateRequest)return;
+ updateRequest='';refreshButton.disabled=false;
+ if(m.ready!==true){refreshButton.textContent='Afslut handlingen og gå til forsiden – prøv igen';return;}
+ refreshButton.disabled=true;refreshButton.textContent='Opdaterer…';
+ const next=new URL(location.href);next.searchParams.set('v',latestRelease.entry+'-'+latestRelease.app+'-'+Date.now());
+ location.replace(next.href); // Same entry URL, including the existing private hash.
+});
+refreshButton.addEventListener('click',()=>{
+ if(!updateSource||!latestRelease||updateRequest)return;
+ updateRequest=Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,'0')).join('');
+ const request=updateRequest;refreshButton.disabled=true;refreshButton.textContent='Kontrollerer…';
+ updateSource.postMessage({app:'wallmann-update',nonce:updateNonce,action:'prepare',request},updateOrigin);
+ setTimeout(()=>{if(updateRequest===request){updateRequest='';refreshButton.disabled=false;refreshButton.textContent='Forbindelsen svarede ikke – prøv igen';}},4000);
+});
+async function checkRelease(){
+ if(document.hidden||releaseBusy)return;releaseBusy=true;
+ const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),10000);
+ try{
+  const response=await fetch('release.json?v='+Date.now(),{cache:'no-store',credentials:'omit',signal:ctrl.signal});
+  if(!response.ok)return;const value=await response.json();
+  if(!value||!['entry','app'].every(k=>/^[a-zA-Z0-9.-]{1,80}$/.test(value[k]||'')))return;
+  latestRelease=value;paintUpdate();
+ }catch(_){}finally{clearTimeout(timer);releaseBusy=false;}
+}
+setInterval(checkRelease,300000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)void checkRelease();});
+void checkRelease();
+
 const key=new URLSearchParams(location.hash.slice(1)).get('kioskKey');
 if(key){if(/^[a-f0-9]{64}$/.test(key))open(key);else $('error').textContent='Linket er ugyldigt. Indsæt det private link til Wallmann Stempelur igen.';}
 })();</script></body></html>
